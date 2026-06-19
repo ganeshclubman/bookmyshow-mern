@@ -68,7 +68,7 @@ const SingleMovie = () => {
             <img src={movie.poster} width={150} alt="Movie Poster" />
           </div>
           <div className="w-100">
-            <h1 className="mt-0">{movie.title}</h1>
+            <h1 className="mt-0">{movie.movieName}</h1>
             <p className="movie-data">
               Language: <span>{movie.language}</span>
             </p>
@@ -77,7 +77,7 @@ const SingleMovie = () => {
             </p>
             <p className="movie-data">
               Release Date:
-              <span>{moment(movie.date).format("MMM Do YYYY")}</span>
+              <span>{moment(movie.releaseDate).format("MMM Do YYYY")}</span>
             </p>
             <p className="movie-data">
               Duration: <span>{movie.duration} Minutes</span>

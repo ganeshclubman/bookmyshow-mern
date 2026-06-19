@@ -16,8 +16,8 @@ const mongoSanitize = require("express-mongo-sanitize");
 connectDB();
 
 const apiLimiter = rateLimit({
-  windowMS: 15 * 60 * 1000,
-  max: 100,
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // 100 requests per IP per window
   message: "Too many requests from this IP, please try again after 15 minutes",
 });
 
@@ -26,13 +26,10 @@ app.use(
   helmet.contentSecurityPolicy({
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "example.com"], // Allow scripts from 'self' and example.com
-      styleSrc: ["'self'", "'unsafe-inline'"], // Allow inline styles (unsafe)
-      imgSrc: ["'self'", "data:", "example.com"], // Allow images from 'self', data URLs, and example.com
-      connectSrc: ["'self'", "api.example.com"], // Allow connections to 'self' and api.example.com
-      fontSrc: ["'self'", "fonts.gstatic.com"], // Allow fonts from 'self' and fonts.gstatic.com
-      objectSrc: ["'none'"], // Disallow object, embed, and applet elements
-      upgradeInsecureRequests: [], // Upgrade insecure requests to HTTPS
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:"],
+      objectSrc: ["'none'"],
+      upgradeInsecureRequests: [],
     },
   })
 );

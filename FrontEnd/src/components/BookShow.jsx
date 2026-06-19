@@ -6,8 +6,12 @@ import { getShowById } from "../api/show";
 import { useNavigate, useParams } from "react-router-dom";
 import { message, Card, Row, Col, Button } from "antd";
 import moment from "moment";
-import StripeCheckout from "react-stripe-checkout";
-import { bookShow, makePayment, makePaymentAndBookShow } from "../api/booking";
+import { bookShow, createCheckoutSession } from "../api/booking";
+
+// Demo mode: when true, "Pay Now" books directly with no Stripe call (handy if no
+// keys are configured). When false (default), it opens Stripe's hosted Checkout,
+// which runs server-side with the secret key in Backend/.env.
+const DEMO_PAYMENT = false;
 
 const BookShow = () => {
   const params = useParams();
@@ -64,7 +68,7 @@ const BookShow = () => {
                 }
                 if (seatNumber <= totalSeats)
                   return (
-                    <li>
+                    <li key={seatNumber}>
                       <button
                         onClick={() => {
                           if (!seatClass.split(" ").includes("booked")) {
@@ -137,15 +141,35 @@ const BookShow = () => {
   //   }
   // };
 
-  const bookAndPay = async (token) => {
+  const payWithCheckout = async () => {
     try {
       dispatch(showLoading());
-      const response = await makePaymentAndBookShow({
-        token,
-        amount: selectedSeats.length * show.ticketPrice * 100,
+      const response = await createCheckoutSession({
+        showId: params.id,
+        seats: selectedSeats,
+        userId: user._id,
+      });
+      if (response.success && response.data?.url) {
+        // hand off to Stripe's hosted payment page
+        window.location.href = response.data.url;
+      } else {
+        message.error(response.message || "Unable to start checkout");
+      }
+    } catch (err) {
+      message.error(err.message || "Checkout error");
+    } finally {
+      dispatch(hideLoading());
+    }
+  };
+
+  const demoBook = async () => {
+    try {
+      dispatch(showLoading());
+      const response = await bookShow({
         show: params.id,
         seats: selectedSeats,
         user: user._id,
+        transactionId: "demo_" + Date.now(),
       });
       if (response.success) {
         message.success("Show Booking done!");
@@ -202,18 +226,17 @@ const BookShow = () => {
               {getSeats()}
 
               {selectedSeats.length > 0 && (
-                <StripeCheckout
-                  token={bookAndPay}
-                  amount={selectedSeats.length * show.ticketPrice}
-                  billingAddress
-                  stripeKey="pk_test_51O5zcBSBDTkZoZSYLMhGUO2MTmaOGJ2zaVA8RuqLn35meiJiQUAzM8HKHgNYXJAGnRSf335yH7rYZQCJ8G6uPIrU00VLrpUJX9"
-                >
-                  <div className="max-width-600 mx-auto">
-                    <Button type="primary" shape="round" size="large" block>
-                      Pay Now
-                    </Button>
-                  </div>
-                </StripeCheckout>
+                <div className="max-width-600 mx-auto">
+                  <Button
+                    type="primary"
+                    shape="round"
+                    size="large"
+                    block
+                    onClick={DEMO_PAYMENT ? demoBook : payWithCheckout}
+                  >
+                    Pay Now
+                  </Button>
+                </div>
               )}
             </Card>
           </Col>

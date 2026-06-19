@@ -11,6 +11,7 @@ import { setupAxiosInterceptors } from "./api";
 import { useEffect } from "react";
 import SingleMovie from "./components/SingleMovie";
 import BookShow from "./components/BookShow";
+import PaymentSuccess from "./components/PaymentSuccess";
 import Forget from "./components/Forget";
 import Reset from "./components/Reset";
 import { useSelector } from "react-redux";
@@ -78,6 +79,14 @@ function App() {
           element={
             <ProtectedRoute>
               <BookShow />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/payment-success"
+          element={
+            <ProtectedRoute>
+              <PaymentSuccess />
             </ProtectedRoute>
           }
         />
